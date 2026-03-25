@@ -3,15 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Perceptron L vs T Classifier</title>
+  <title>L vs T Perceptron</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Perceptron Letter Classifier</h1>
-    <p class="subtitle">
-      Click the 4x4 boxes to draw a letter. Then press <strong>Classify</strong>.
-    </p>
+    <h1>Perceptron Classifier: L vs T</h1>
+    <p>Click the boxes to draw a 4x4 pattern, then classify it.</p>
 
     <div class="card">
       <div id="grid" class="grid"></div>
@@ -23,34 +21,21 @@
         <button id="trainBtn">Retrain</button>
       </div>
 
-      <div class="result-area">
+      <div class="results">
         <p><strong>Prediction:</strong> <span id="prediction">None</span></p>
         <p><strong>Raw Output:</strong> <span id="rawOutput">0</span></p>
         <p><strong>Training Accuracy:</strong> <span id="accuracy">0%</span></p>
-      </div>
-
-      <div class="legend">
-        <div><span class="legend-box on"></span> Filled cell = 1</div>
-        <div><span class="legend-box off"></span> Empty cell = 0</div>
+        <p><strong>Total Samples:</strong> <span id="totalSamples">0</span></p>
       </div>
     </div>
 
     <div class="card">
-      <h2>Current 16-Value Input</h2>
+      <h3>Current Input Vector</h3>
       <pre id="vectorDisplay">[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]</pre>
     </div>
 
     <div class="card">
-      <h2>About</h2>
-      <p>
-        This project uses a binary perceptron to classify 4x4 images of the
-        letters <strong>L</strong> and <strong>T</strong>.
-      </p>
-      <p>
-        Labels used:
-        <strong>0 = L</strong>,
-        <strong>1 = T</strong>
-      </p>
+      <p><strong>Labels:</strong> 0 = L, 1 = T</p>
     </div>
   </div>
 
