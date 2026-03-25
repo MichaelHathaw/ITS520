@@ -1,1 +1,115 @@
+* {
+  box-sizing: border-box;
+}
 
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f8;
+  color: #222;
+}
+
+.container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+h1, h2 {
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.grid {
+  width: 260px;
+  margin: 0 auto 20px auto;
+  display: grid;
+  grid-template-columns: repeat(4, 55px);
+  grid-template-rows: repeat(4, 55px);
+  gap: 8px;
+}
+
+.cell {
+  width: 55px;
+  height: 55px;
+  border: 2px solid #333;
+  background: #fff;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.cell.active {
+  background: #1f6feb;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #222;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.result-area {
+  text-align: center;
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.legend-box {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #333;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.legend-box.on {
+  background: #1f6feb;
+}
+
+.legend-box.off {
+  background: white;
+}
+
+pre {
+  background: #f0f2f5;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
