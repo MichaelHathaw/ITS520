@@ -1,5 +1,5 @@
 class Perceptron {
-  constructor(inputSize, learningRate = 0.1, epochs = 40) {
+  constructor(inputSize, learningRate = 0.1, epochs = 50) {
     this.inputSize = inputSize;
     this.learningRate = learningRate;
     this.epochs = epochs;
@@ -25,12 +25,13 @@ class Perceptron {
   train(X, y) {
     for (let epoch = 0; epoch < this.epochs; epoch++) {
       for (let i = 0; i < X.length; i++) {
-        const out = this.predict(X[i]).pred;
-        const error = y[i] - out;
+        const output = this.predict(X[i]).pred;
+        const error = y[i] - output;
 
         for (let j = 0; j < this.inputSize; j++) {
           this.weights[j] += this.learningRate * error * X[i][j];
         }
+
         this.bias += this.learningRate * error;
       }
     }
@@ -47,7 +48,7 @@ class Perceptron {
   }
 }
 
-let perceptron = new Perceptron(16);
+let perceptron = new Perceptron(16, 0.1, 50);
 let TRAINING_DATA = [];
 let currentGrid = new Array(16).fill(0);
 
@@ -55,8 +56,10 @@ const gridElement = document.getElementById("grid");
 const predictionElement = document.getElementById("prediction");
 const rawOutputElement = document.getElementById("rawOutput");
 const accuracyElement = document.getElementById("accuracy");
-const vectorDisplay = document.getElementById("vectorDisplay");
 const totalSamplesElement = document.getElementById("totalSamples");
+const lCountElement = document.getElementById("lCount");
+const tCountElement = document.getElementById("tCount");
+const vectorDisplay = document.getElementById("vectorDisplay");
 
 function renderGrid() {
   gridElement.innerHTML = "";
@@ -64,6 +67,7 @@ function renderGrid() {
   currentGrid.forEach((value, index) => {
     const cell = document.createElement("div");
     cell.className = "cell";
+
     if (value === 1) {
       cell.classList.add("active");
     }
@@ -93,26 +97,24 @@ function clearGrid() {
 function classifyGrid() {
   const result = perceptron.predict(currentGrid);
   predictionElement.textContent = result.pred === 0 ? "L" : "T";
-  rawOutputElement.textContent = result.raw.toFixed(3);
+  rawOutputElement.textContent = result.raw.toFixed(4);
 }
 
-function showAccuracy() {
+function retrainModel() {
   const X = TRAINING_DATA.map(item => item.x);
   const y = TRAINING_DATA.map(item => item.y);
+
+  perceptron = new Perceptron(16, 0.1, 50);
+  perceptron.train(X, y);
+
   const acc = perceptron.accuracy(X, y).toFixed(2);
   accuracyElement.textContent = `${acc}%`;
+  alert("Perceptron retrained.");
 }
 
-function retrain() {
-  perceptron = new Perceptron(16);
-  const X = TRAINING_DATA.map(item => item.x);
-  const y = TRAINING_DATA.map(item => item.y);
-  perceptron.train(X, y);
-  showAccuracy();
-  alert("Model retrained.");
-}
+function loadRandomSample() {
+  if (TRAINING_DATA.length === 0) return;
 
-function randomSample() {
   const randomIndex = Math.floor(Math.random() * TRAINING_DATA.length);
   currentGrid = [...TRAINING_DATA[randomIndex].x];
   renderGrid();
@@ -127,16 +129,23 @@ async function loadDataset() {
   const X = TRAINING_DATA.map(item => item.x);
   const y = TRAINING_DATA.map(item => item.y);
 
-  perceptron.train(X, y);
-  showAccuracy();
+  const lCount = TRAINING_DATA.filter(item => item.y === 0).length;
+  const tCount = TRAINING_DATA.filter(item => item.y === 1).length;
 
   totalSamplesElement.textContent = TRAINING_DATA.length;
+  lCountElement.textContent = lCount;
+  tCountElement.textContent = tCount;
+
+  perceptron.train(X, y);
+
+  const acc = perceptron.accuracy(X, y).toFixed(2);
+  accuracyElement.textContent = `${acc}%`;
 }
 
 document.getElementById("classifyBtn").addEventListener("click", classifyGrid);
 document.getElementById("clearBtn").addEventListener("click", clearGrid);
-document.getElementById("randomBtn").addEventListener("click", randomSample);
-document.getElementById("trainBtn").addEventListener("click", retrain);
+document.getElementById("randomBtn").addEventListener("click", loadRandomSample);
+document.getElementById("trainBtn").addEventListener("click", retrainModel);
 
 renderGrid();
 updateVectorDisplay();
