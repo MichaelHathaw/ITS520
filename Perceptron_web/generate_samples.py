@@ -1,137 +1,157 @@
 import json
-import random
 
-random.seed(42)
-
-GRID_SIZE = 4
+GRID = 4
 
 def empty_grid():
-    return [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+    return [[0 for _ in range(GRID)] for _ in range(GRID)]
 
 def flatten(grid):
     return [cell for row in grid for cell in row]
 
-def add_noise(grid, max_flips=1):
-    """
-    Add very small controlled noise while trying to preserve the letter.
-    """
-    g = [row[:] for row in grid]
-    flips = random.randint(0, max_flips)
-    for _ in range(flips):
-        r = random.randint(0, GRID_SIZE - 1)
-        c = random.randint(0, GRID_SIZE - 1)
-        g[r][c] = 1 if g[r][c] == 0 else 0
-    return g
+def print_grid(grid):
+    for row in grid:
+        print("".join(str(x) for x in row))
+    print()
 
-def make_L(col=0, height=4, foot_len=3, base_row=3):
+def grid_to_tuple(grid):
+    return tuple(tuple(row) for row in grid)
+
+def make_L(top_row, left_col, height, width):
     """
-    Make an L:
-    - vertical line at 'col'
-    - bottom horizontal line at 'base_row'
+    L shape:
+    - vertical line goes downward from (top_row, left_col)
+    - bottom foot goes right from the bottom of that vertical line
     """
     g = empty_grid()
 
-    start_row = max(0, base_row - height + 1)
-    for r in range(start_row, base_row + 1):
-        g[r][col] = 1
+    # vertical part
+    for r in range(top_row, top_row + height):
+        g[r][left_col] = 1
 
-    for c in range(col, min(GRID_SIZE, col + foot_len)):
-        g[base_row][c] = 1
+    # bottom horizontal foot
+    bottom_row = top_row + height - 1
+    for c in range(left_col, left_col + width):
+        g[bottom_row][c] = 1
 
     return g
 
-def make_T(top_row=0, stem_col=1, bar_len=3, stem_len=4, start_col=None):
+def make_T(top_row, left_col, bar_width, stem_height, stem_col_offset):
     """
-    Make a T:
-    - top horizontal bar
-    - vertical stem downward
+    T shape:
+    - top horizontal bar starts at (top_row, left_col) with length bar_width
+    - stem starts on the same top row and goes downward
+    - stem_col_offset says where the stem is under the bar
+      e.g. if left_col=1 and stem_col_offset=2, stem is at col 3
     """
     g = empty_grid()
 
-    if start_col is None:
-        start_col = max(0, stem_col - (bar_len // 2))
-    end_col = min(GRID_SIZE, start_col + bar_len)
-
-    for c in range(start_col, end_col):
+    # top bar
+    for c in range(left_col, left_col + bar_width):
         g[top_row][c] = 1
 
-    end_row = min(GRID_SIZE, top_row + stem_len)
-    for r in range(top_row, end_row):
+    stem_col = left_col + stem_col_offset
+
+    # vertical stem
+    for r in range(top_row, top_row + stem_height):
         g[r][stem_col] = 1
 
     return g
 
-def dataset_key(x):
-    return tuple(x)
-
-def generate_L_samples():
+def generate_all_Ls():
+    """
+    Generate every possible L in a 4x4 grid:
+    - height: 2..4
+    - width: 2..4
+    - placed anywhere it fits
+    """
+    unique = {}
     samples = []
 
-    # Many L variations possible on 4x4
-    for col in range(0, 2):                 # left or slightly shifted right
-        for height in range(2, 5):          # 2..4
-            for foot_len in range(2, 5):    # 2..4
-                for base_row in range(2, 4):# row 2 or 3
-                    g = make_L(col, height, foot_len, base_row)
-                    samples.append((flatten(g), 0))
-
-                    # noisy versions
-                    for _ in range(3):
-                        noisy = add_noise(g, max_flips=1)
-                        samples.append((flatten(noisy), 0))
+    for height in range(2, GRID + 1):
+        for width in range(2, GRID + 1):
+            for top_row in range(0, GRID - height + 1):
+                for left_col in range(0, GRID - width + 1):
+                    g = make_L(top_row, left_col, height, width)
+                    key = grid_to_tuple(g)
+                    if key not in unique:
+                        unique[key] = True
+                        samples.append({
+                            "x": flatten(g),
+                            "y": 0,   # L = 0
+                            "shape": "L"
+                        })
     return samples
 
-def generate_T_samples():
+def generate_all_Ts():
+    """
+    Generate every possible T in a 4x4 grid:
+    - bar_width: 2..4
+    - stem_height: 2..4
+    - stem can be at any position under the top bar
+    - placed anywhere it fits
+    """
+    unique = {}
     samples = []
 
-    for top_row in range(0, 2):             # row 0 or 1
-        for stem_col in range(1, 3):        # col 1 or 2
-            for bar_len in range(2, 5):     # 2..4
-                for stem_len in range(2, 5):# 2..4
-                    start_col = max(0, stem_col - (bar_len // 2))
-                    g = make_T(top_row, stem_col, bar_len, stem_len, start_col)
-                    samples.append((flatten(g), 1))
-
-                    # noisy versions
-                    for _ in range(3):
-                        noisy = add_noise(g, max_flips=1)
-                        samples.append((flatten(noisy), 1))
+    for bar_width in range(2, GRID + 1):
+        for stem_height in range(2, GRID + 1):
+            for stem_col_offset in range(bar_width):
+                for top_row in range(0, GRID - stem_height + 1):
+                    for left_col in range(0, GRID - bar_width + 1):
+                        g = make_T(top_row, left_col, bar_width, stem_height, stem_col_offset)
+                        key = grid_to_tuple(g)
+                        if key not in unique:
+                            unique[key] = True
+                            samples.append({
+                                "x": flatten(g),
+                                "y": 1,   # T = 1
+                                "shape": "T"
+                            })
     return samples
 
-def unique_samples(samples):
-    seen = set()
-    unique = []
-    for x, y in samples:
-        key = (tuple(x), y)
-        if key not in seen:
-            seen.add(key)
-            unique.append((x, y))
-    return unique
+def verify_examples():
+    """
+    Verify the two patterns you mentioned are recognized as Ts.
+    """
+    ex1 = [
+        [0,0,0,0],
+        [0,1,1,1],
+        [0,0,1,0],
+        [0,0,1,0]
+    ]
+
+    ex2 = [
+        [0,0,0,0],
+        [0,0,0,0],
+        [0,1,1,1],
+        [0,0,1,0]
+    ]
+
+    t_samples = generate_all_Ts()
+    t_set = {tuple(s["x"]) for s in t_samples}
+
+    print("Example 1 is T:", tuple(flatten(ex1)) in t_set)
+    print("Example 2 is T:", tuple(flatten(ex2)) in t_set)
 
 def main():
-    L_samples = unique_samples(generate_L_samples())
-    T_samples = unique_samples(generate_T_samples())
+    Ls = generate_all_Ls()
+    Ts = generate_all_Ts()
 
-    random.shuffle(L_samples)
-    random.shuffle(T_samples)
+    dataset = Ls + Ts
 
-    # Make exactly 60 of each = 120 total
-    L_samples = L_samples[:60]
-    T_samples = T_samples[:60]
+    print("Total L samples:", len(Ls))
+    print("Total T samples:", len(Ts))
+    print("Total dataset size:", len(dataset))
+    print()
 
-    dataset = []
-    for x, y in L_samples + T_samples:
-        dataset.append({"x": x, "y": y})
+    verify_examples()
 
-    X = [item["x"] for item in dataset]
-    y = [item["y"] for item in dataset]
+    with open("dataset.json", "w") as f:
+        json.dump(dataset, f, indent=2)
 
-    print("Total samples:", len(dataset))
-    print("L samples:", len(L_samples))
-    print("T samples:", len(T_samples))
-
-    print("\nCopy this into app.js as TRAINING_DATA:\n")
-    print(json.dumps(dataset, indent=2))
+    print("\nSaved dataset to dataset.json")
+    print("\nFirst 10 samples:")
+    print(json.dumps(dataset[:10], indent=2))
 
 if __name__ == "__main__":
     main()
