@@ -82,6 +82,31 @@ button:hover {
   line-height: 1.8;
 }
 
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.legend-box {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #333;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.legend-box.on {
+  background: #1f6feb;
+}
+
+.legend-box.off {
+  background: white;
+}
+
 pre {
   background: #f0f2f5;
   padding: 12px;
