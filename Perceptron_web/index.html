@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>L vs T Perceptron</title>
+  <title>Perceptron L vs T Classifier</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Perceptron Classifier: L vs T</h1>
-    <p>Click the boxes to draw a 4x4 pattern, then classify it.</p>
+    <h1>Perceptron Letter Classifier</h1>
+    <p class="subtitle">
+      Click the 4x4 grid to draw a pattern, then classify it as <strong>L</strong> or <strong>T</strong>.
+    </p>
 
     <div class="card">
       <div id="grid" class="grid"></div>
@@ -21,21 +23,31 @@
         <button id="trainBtn">Retrain</button>
       </div>
 
-      <div class="results">
+      <div class="result-area">
         <p><strong>Prediction:</strong> <span id="prediction">None</span></p>
         <p><strong>Raw Output:</strong> <span id="rawOutput">0</span></p>
         <p><strong>Training Accuracy:</strong> <span id="accuracy">0%</span></p>
         <p><strong>Total Samples:</strong> <span id="totalSamples">0</span></p>
+        <p><strong>L Samples:</strong> <span id="lCount">0</span></p>
+        <p><strong>T Samples:</strong> <span id="tCount">0</span></p>
       </div>
     </div>
 
     <div class="card">
-      <h3>Current Input Vector</h3>
+      <h2>Current 16-Value Input</h2>
       <pre id="vectorDisplay">[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]</pre>
     </div>
 
     <div class="card">
-      <p><strong>Labels:</strong> 0 = L, 1 = T</p>
+      <h2>Label Rules</h2>
+      <p><strong>L = 0</strong></p>
+      <p><strong>T = 1</strong></p>
+      <p>
+        T shapes can be width 2–4, stem height 2–4, and the stem may be under any bar cell.
+      </p>
+      <p>
+        L shapes can be height 2–4, foot width 2–4, with the foot extending right from the bottom.
+      </p>
     </div>
   </div>
 
