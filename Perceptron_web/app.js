@@ -23,10 +23,11 @@ class Perceptron {
   }
 
   train(X, y) {
+    if (!X || X.length === 0) return;
+
     for (let epoch = 0; epoch < this.epochs; epoch++) {
       const indices = [...Array(X.length).keys()];
 
-      // shuffle every epoch
       for (let i = indices.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -46,6 +47,8 @@ class Perceptron {
   }
 
   accuracy(X, y) {
+    if (!X || X.length === 0) return 0;
+
     let correct = 0;
     for (let i = 0; i < X.length; i++) {
       if (this.predict(X[i]).pred === y[i]) {
@@ -103,12 +106,23 @@ function clearGrid() {
 }
 
 function classifyGrid() {
+  if (TRAINING_DATA.length === 0) {
+    predictionElement.textContent = "Dataset not loaded";
+    rawOutputElement.textContent = "0";
+    return;
+  }
+
   const result = perceptron.predict(currentGrid);
   predictionElement.textContent = result.pred === 0 ? "L" : "T";
   rawOutputElement.textContent = result.raw.toFixed(4);
 }
 
 function retrainModel() {
+  if (TRAINING_DATA.length === 0) {
+    alert("Dataset not loaded. Make sure dataset.json is in the same folder and the page is running from a local server or GitHub Pages.");
+    return;
+  }
+
   const X = TRAINING_DATA.map(item => item.x);
   const y = TRAINING_DATA.map(item => item.y);
 
@@ -121,7 +135,10 @@ function retrainModel() {
 }
 
 function loadRandomSample() {
-  if (TRAINING_DATA.length === 0) return;
+  if (TRAINING_DATA.length === 0) {
+    alert("Dataset not loaded.");
+    return;
+  }
 
   const randomIndex = Math.floor(Math.random() * TRAINING_DATA.length);
   currentGrid = [...TRAINING_DATA[randomIndex].x];
@@ -131,23 +148,55 @@ function loadRandomSample() {
 }
 
 async function loadDataset() {
-  const response = await fetch("dataset.json");
-  TRAINING_DATA = await response.json();
+  try {
+    const response = await fetch("dataset.json");
 
-  const X = TRAINING_DATA.map(item => item.x);
-  const y = TRAINING_DATA.map(item => item.y);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} while loading dataset.json`);
+    }
 
-  const lCount = TRAINING_DATA.filter(item => item.y === 0).length;
-  const tCount = TRAINING_DATA.filter(item => item.y === 1).length;
+    const data = await response.json();
 
-  totalSamplesElement.textContent = TRAINING_DATA.length;
-  lCountElement.textContent = lCount;
-  tCountElement.textContent = tCount;
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("dataset.json loaded, but it is empty or invalid.");
+    }
 
-  perceptron.train(X, y);
+    TRAINING_DATA = data;
 
-  const acc = perceptron.accuracy(X, y).toFixed(2);
-  accuracyElement.textContent = `${acc}%`;
+    const X = TRAINING_DATA.map(item => item.x);
+    const y = TRAINING_DATA.map(item => item.y);
+
+    const lCount = TRAINING_DATA.filter(item => item.y === 0).length;
+    const tCount = TRAINING_DATA.filter(item => item.y === 1).length;
+
+    totalSamplesElement.textContent = TRAINING_DATA.length;
+    lCountElement.textContent = lCount;
+    tCountElement.textContent = tCount;
+
+    perceptron.train(X, y);
+
+    const acc = perceptron.accuracy(X, y).toFixed(2);
+    accuracyElement.textContent = `${acc}%`;
+
+    console.log("Dataset loaded successfully:", TRAINING_DATA.length, "samples");
+  } catch (error) {
+    console.error("Failed to load dataset:", error);
+    accuracyElement.textContent = "0.00%";
+    totalSamplesElement.textContent = "0";
+    lCountElement.textContent = "0";
+    tCountElement.textContent = "0";
+    predictionElement.textContent = "Dataset load error";
+    rawOutputElement.textContent = "0";
+
+    alert(
+      "Could not load dataset.json.\n\n" +
+      "Make sure:\n" +
+      "1. dataset.json is in the same folder as index.html\n" +
+      "2. you are not opening index.html directly with file://\n" +
+      "3. you are using a local server or GitHub Pages\n\n" +
+      "Check the browser console for details."
+    );
+  }
 }
 
 document.getElementById("classifyBtn").addEventListener("click", classifyGrid);
