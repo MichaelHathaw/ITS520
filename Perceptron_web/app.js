@@ -1,5 +1,5 @@
 class Perceptron {
-  constructor(inputSize, learningRate = 0.1, epochs = 50) {
+  constructor(inputSize, learningRate = 0.1, epochs = 200) {
     this.inputSize = inputSize;
     this.learningRate = learningRate;
     this.epochs = epochs;
@@ -24,12 +24,20 @@ class Perceptron {
 
   train(X, y) {
     for (let epoch = 0; epoch < this.epochs; epoch++) {
-      for (let i = 0; i < X.length; i++) {
-        const output = this.predict(X[i]).pred;
-        const error = y[i] - output;
+      const indices = [...Array(X.length).keys()];
+
+      // shuffle every epoch
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+
+      for (const idx of indices) {
+        const output = this.predict(X[idx]).pred;
+        const error = y[idx] - output;
 
         for (let j = 0; j < this.inputSize; j++) {
-          this.weights[j] += this.learningRate * error * X[i][j];
+          this.weights[j] += this.learningRate * error * X[idx][j];
         }
 
         this.bias += this.learningRate * error;
@@ -48,7 +56,7 @@ class Perceptron {
   }
 }
 
-let perceptron = new Perceptron(16, 0.1, 50);
+let perceptron = new Perceptron(16, 0.1, 200);
 let TRAINING_DATA = [];
 let currentGrid = new Array(16).fill(0);
 
@@ -104,7 +112,7 @@ function retrainModel() {
   const X = TRAINING_DATA.map(item => item.x);
   const y = TRAINING_DATA.map(item => item.y);
 
-  perceptron = new Perceptron(16, 0.1, 50);
+  perceptron = new Perceptron(16, 0.1, 200);
   perceptron.train(X, y);
 
   const acc = perceptron.accuracy(X, y).toFixed(2);
