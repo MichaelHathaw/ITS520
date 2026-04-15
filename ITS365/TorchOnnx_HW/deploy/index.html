@@ -1,1 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Breast Cancer Classifier</title>
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+  <style>
+    :root {
+      --bg: #f7f7fb;
+      --card: #ffffff;
+      --border: #d9dbe7;
+      --text: #1f2430;
+      --muted: #5e6577;
+      --accent: #3b82f6;
+      --good: #15803d;
+      --bad: #b91c1c;
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      margin: 0 0 20px 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+      margin-bottom: 18px;
+    }
+
+    .status {
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .status.ready { color: var(--good); }
+    .status.loading { color: var(--accent); }
+    .status.error { color: var(--bad); }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      background: var(--accent);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #6b7280;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.96rem;
+    }
+
+    .result-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .prediction {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    .confidence {
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    .prob-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .footnote {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .small {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    code {
+      background: #eef2ff;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Breast Cancer ONNX Classifier</h1>
+    <p class="subtitle">
+      This page loads <code>breast_cancer_cls.onnx</code> and <code>preprocess_cls.json</code>
+      in the browser, applies the same numeric standardization used during training, and predicts
+      whether the sample is <strong>malignant</strong> or <strong>benign</strong>.
+    </p>
+
+    <div class="card">
+      <div id="modelStatus" class="status loading">Loading model and preprocessing files...</div>
+      <div class="small">
+        Put <code>index.html</code>, <code>app.js</code>, <code>breast_cancer_cls.onnx</code>,
+        and <code>preprocess_cls.json</code> in the same GitHub Pages folder.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Input Features</h2>
+      <div id="featureGrid" class="grid"></div>
+      <div class="controls">
+        <button id="predictBtn" disabled>Predict</button>
+        <button id="fillExampleBtn" class="secondary" disabled>Fill Example Values</button>
+        <button id="clearBtn" class="secondary" disabled>Clear</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Prediction</h2>
+      <div id="result" class="result-box">
+        <div class="prediction">No prediction yet.</div>
+        <div class="confidence">Load the model, enter values, and click Predict.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Notes</h2>
+      <p class="footnote">
+        This is a browser demo for a class assignment and is not medical advice. The feature names
+        come from the preprocessing metadata and must be entered as numbers in the same order used
+        during training.
+      </p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
